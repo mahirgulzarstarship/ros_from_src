@@ -24,7 +24,7 @@ python --version | awk  '{print $2}' | cut -d'.' -f1
 # TODO(lucasw) these aren't working
 PYTHON_MAJOR_VERSION=`python --version | awk  '{print $2}' | cut -d'.' -f1`
 PYTHON_MINOR_VERSION=`python --version | awk  '{print $2}' | cut -d'.' -f2`
-OPT_PYTHONPATH=$DEST/lib/python$PYTHON_MAJOR_VERSION.$PYTHON_MINOR_VERSION/site-packages/
+OPT_PYTHONPATH=$DEST/local/lib/python$PYTHON_MAJOR_VERSION.$PYTHON_MINOR_VERSION/dist-packages/
 echo $PYTHONPATH
 export PYTHONPATH=$PYTHONPATH:$OPT_PYTHONPATH
 echo PYTHONPATH=\$PYTHONPATH:$OPT_PYTHONPATH
@@ -135,6 +135,10 @@ python3 setup.py install --prefix=$DEST --record install_manifest.txt --single-v
 
 cd $SRC/rosdep
 python3 setup.py install --prefix=$DEST --record install_manifest.txt --single-version-externally-managed
+
+# rosdep
+export PATH=$DEST/local/bin:$PATH
+
 rosdep init || true
 rosdep update
 
@@ -154,6 +158,8 @@ echo $CMAKE_PREFIX_PATH
 # TODO(lucasw) put this in WS to begin with
 # TODO(lucasw) was this needed?  Need a bunch of CATKIN_IGNOREs in every package/test dir to make it build
 # ln -s $SRC/ros $WS/ros
+# Ensure Orocos is discoverable
+export CMAKE_PREFIX_PATH=/opt/orocos/noetic:$CMAKE_PREFIX_PATH
 catkin build --cmake-args -DCMAKE_BUILD_TYPE=Release -Wno-deprecated
 source devel/setup.bash
 rospack list

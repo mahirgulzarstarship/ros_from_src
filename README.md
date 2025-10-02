@@ -2,14 +2,36 @@
 
 To build ros entirely from source without using a PPA (or even the debian ros packages):
 
-    git clone https://github.com/lsr0/ros_from_src
+## Clone ubuntu2404 branch repo and install dependencies
+    git clone -b ubuntu2404 https://github.com/lsr0/ros_from_src.git
     cd ros_from_src
     mkdir build
     cd build
-    # if Ubuntu 22.04 or later
     ../git_clone.sh
     # (take look at this script before running as sudo)
     sudo ../dependencies.sh
+
+### Install orocos_kdl 
+
+    sudo mkdir -p /opt/orocos/noetic
+    sudo chwown <youruser> /opt/orocos/noetic
+
+    git clone https://github.com/orocos/orocos_kinematics_dynamics.git
+    cd orocos_kinematics_dynamics/orocos_kdl 
+
+    mkdir build
+    cd build
+
+    cmake .. -DCMAKE_INSTALL_PREFIX=/opt/orocos/noetic
+    make -j$(nproc)
+    sudo make install
+
+    sudo chown root /opt/orocos/noetic
+
+
+## Build
+
+    cd ros_from_src/build
 
     # The build.sh file will also install to /opt/ros/noetic
     sudo mkdir /opt/ros/noetic
@@ -17,23 +39,20 @@ To build ros entirely from source without using a PPA (or even the debian ros pa
     ../build.sh
     sudo chown root /opt/ros/noetic
 
-The above should be similar to what is in the github action: .github/workflows/ubuntu_20_04.yaml
+## Export variables to .bashrc
 
-    export ROS_BUILD_DIR=$HOME/own/build/ros_from_src  # or whatever
-    export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:$ROS_BUILD_DIR/ros/lib/cmake
-    # make this python3.8 if python --version shows that to be your version
-    export PYTHONPATH=$PYTHONPATH:$ROS_BUILD_DIR/ros/lib/python3.9/site-packages/
-    # source $ROS_BUILD_DIR/ros/setup.bash
+    cat << 'EOF' >> ~/.bashrc
+
+    # Make sure to check the ros_from_src path before exporting
+    export ROS_BUILD_DIR=$HOME/ros_from_src/build/ #CHANGE to your ros_from_src/build folder
+    export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:$ROS_BUILD_DIR/ros/lib/cache
+    export PATH=$ROS_BUILD_DIR/ros/local/bin:$PATH
+    export PYTHONPATH=$PYTHONPATH:$ROS_BUILD_DIR/ros/local/lib/python3.12/dist-packages/
     source $ROS_BUILD_DIR/catkin_ws/devel/setup.bash
 
-To build with docker and another ubuntu version:
+    EOF
 
-    docker build --build-arg IMAGE=ubuntu:21.10 --build-arg ROSCONSOLE=https://github.com/ros/rosconsole --build-arg PYTHON_MINOR_VERSION=9 . -t ros2110
-
-Build with default Ubuntu 22.04 version:
-
-    docker build . -t ros2204
-
+    exec bash
 
 If you have problems compiling packages that use pcl: build processes complaining they depend on `usb-1.0` but can't find it, apply this patch to one of pcl's included cmake files:
 
