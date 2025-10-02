@@ -2,8 +2,8 @@
 
 To build ros entirely from source without using a PPA (or even the debian ros packages):
 
-## Clone ubuntu2404 branch repo and install dependencies
-    git clone -b ubuntu2404 https://github.com/lsr0/ros_from_src.git
+## Clone repo and install dependencies
+    git clone https://github.com/mahirgulzarstarship/ros_from_src.git
     cd ros_from_src
     mkdir build
     cd build
